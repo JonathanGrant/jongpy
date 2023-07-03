@@ -21,6 +21,10 @@ class DType {
         uint8_t size() const { return _size; };
         COMMON_DTYPES dtype() const { return _dtype; };
         std::string to_string();
+
+        bool operator==(const DType& other) const {
+            return this->dtype() == other.dtype();
+        }
     
     private:
         uint8_t _size;

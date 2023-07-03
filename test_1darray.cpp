@@ -177,3 +177,23 @@ TEST(OneDArrayTest, RandomizedAccessTest) {
         }
     }
 }
+
+TEST(OneDArrayTest, CopyConstructorTest) {
+    unsigned char data[40] = {0};  
+    for(int i = 0; i < 10; i++) *reinterpret_cast<float*>(&data[i*4]) = (i/10.0f);
+    
+    DType dtype(COMMON_DTYPES::SF32);
+    OneDArray original(data, dtype, 10);  // Create an instance of OneDArray
+
+    // Use the copy constructor
+    OneDArray copy(original);
+
+    // Validate the results
+    EXPECT_EQ(copy.length(), original.length());
+    EXPECT_EQ(copy.dtype(), original.dtype());
+    EXPECT_EQ(copy.stride(), original.stride());
+
+    for (size_t i = 0; i < original.length(); i++) {
+        EXPECT_FLOAT_EQ(copy.getElement<float>(i), original.getElement<float>(i));
+    }
+}

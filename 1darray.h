@@ -7,10 +7,15 @@ public:
     OneDArray(std::unique_ptr<unsigned char[]> data, DType dtype, size_t length, size_t stride = 1)
         : _data(std::move(data)), _dtype(dtype), _length(length), _stride(stride) {}
     OneDArray(const unsigned char* data, DType dtype, size_t length, size_t stride = 1)
-        : _data(std::make_unique<unsigned char[]>(length)), _dtype(dtype), _length(length), _stride(stride) {
+        : _data(std::make_unique<unsigned char[]>(stride * dtype.size() * length)), _dtype(dtype), _length(length), _stride(stride) {
         std::copy(data, data + stride * dtype.size() * length, _data.get());
     }
+
+    OneDArray(const OneDArray& other); // TODO: Use SIMD and loop unrolling
+
+    const DType dtype() { return _dtype; };
     const size_t length() { return _length; };
+    const size_t stride() { return _stride; };
 
     template<typename T>
     T& operator[](size_t idx) const {
