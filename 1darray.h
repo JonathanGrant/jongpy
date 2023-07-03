@@ -1,10 +1,15 @@
 #include "dtypes.h"
 #include <stdexcept>
+#include <memory>
 
 class OneDArray {
 public:
-    OneDArray(unsigned char* data, DType dtype, size_t length, size_t stride = 1)
-        : _data(data), _dtype(dtype), _length(length), _stride(stride) {}
+    OneDArray(std::unique_ptr<unsigned char[]> data, DType dtype, size_t length, size_t stride = 1)
+        : _data(std::move(data)), _dtype(dtype), _length(length), _stride(stride) {}
+    OneDArray(const unsigned char* data, DType dtype, size_t length, size_t stride = 1)
+        : _data(std::make_unique<unsigned char[]>(length)), _dtype(dtype), _length(length), _stride(stride) {
+        std::copy(data, data + stride * dtype.size() * length, _data.get());
+    }
     const size_t length() { return _length; };
 
     template<typename T>
@@ -24,11 +29,11 @@ public:
         }
         size_t byte_stride = _stride * _dtype.size();
         size_t start_idx = idx * byte_stride;
-        return *reinterpret_cast<T*>(_data + start_idx);
+        return *reinterpret_cast<T*>(_data.get() + start_idx);
     }
 
 private:
-    unsigned char* _data;
+    std::unique_ptr<unsigned char[]> _data;
     DType  _dtype;
     size_t _length;
     size_t _stride;
