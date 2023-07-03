@@ -1,7 +1,7 @@
 #include "dtypes.h"
 #include "utils.cpp"
 
-std::array<uint8_t, 14> DTYPE_TO_BYTES = {
+std::array<uint8_t, 12> DTYPE_TO_BYTES = {
     1, // BL08
     1, // CH08
     1, // UI08
@@ -10,14 +10,12 @@ std::array<uint8_t, 14> DTYPE_TO_BYTES = {
     2, // SI16
     4, // UI32
     4, // SI32
-    4, // UF32
     4, // SF32
     8, // UI64
     8, // SI64
-    8, // UD64
     8, // SD64
 };
-std::array<std::string, 14> DTYPE_TO_NAME = {
+std::array<std::string, 12> DTYPE_TO_NAME = {
     "BL08",
     "CH08",
     "UI08",
@@ -26,11 +24,9 @@ std::array<std::string, 14> DTYPE_TO_NAME = {
     "SI16",
     "UI32",
     "SI32",
-    "UF32",
     "SF32",
     "UI64",
     "SI64",
-    "UD64",
     "SD64",
 };
 

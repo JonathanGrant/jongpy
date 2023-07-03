@@ -4,12 +4,16 @@
 
 enum COMMON_DTYPES {
     BL08, CH08,
-    UI08, SI08, UI16, SI16, UI32, SI32, UI64, SI64,
-    UF32, SF32, UD64, SD64,
+    UI08, SI08,
+    UI16, SI16,
+    UI32, SI32,
+    SF32,
+    UI64, SI64,
+    SD64,
 };
 
-extern std::array<uint8_t, 14> DTYPE_TO_BYTES;
-extern std::array<std::string, 14> DTYPE_TO_NAME;
+extern std::array<uint8_t, 12> DTYPE_TO_BYTES;
+extern std::array<std::string, 12> DTYPE_TO_NAME;
 
 class DType {
     public:
