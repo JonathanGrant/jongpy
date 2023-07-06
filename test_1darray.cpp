@@ -29,7 +29,7 @@ TEST(OneDArrayTest, OutOfBoundsTest) {
     DType dtype(COMMON_DTYPES::UI08);
     OneDArray array(data, dtype, 10);
 
-    EXPECT_THROW(array.getElement<unsigned char>(10), std::invalid_argument);
+    EXPECT_THROW(array.getElement<unsigned char>(10), std::out_of_range);
 }
 
 TEST(OneDArrayTest, HighStrideAccessTest) {
@@ -195,5 +195,86 @@ TEST(OneDArrayTest, CopyConstructorTest) {
 
     for (size_t i = 0; i < original.length(); i++) {
         EXPECT_FLOAT_EQ(copy.getElement<float>(i), original.getElement<float>(i));
+    }
+}
+
+TEST(OneDArrayTest, CopyConstructorTest2) {
+    // Set up original array
+    DType dtype(COMMON_DTYPES::SF32);
+    unsigned char original_data[40] = {0};  
+    std::unique_ptr<unsigned char[]> data(new unsigned char[40]);
+    std::copy(original_data, original_data + 40, data.get());
+    OneDArray original(std::move(data), dtype, 10);
+
+    // Create a copy
+    OneDArray copy(original);
+
+    // Verify attributes are copied correctly
+    EXPECT_EQ(copy.dtype(), original.dtype());
+    EXPECT_EQ(copy.length(), original.length());
+    EXPECT_EQ(copy.stride(), original.stride());
+
+    // Verify data is copied correctly
+    for(size_t i = 0; i < original.length(); i++) {
+        EXPECT_EQ(copy.getElement<float>(i), original.getElement<float>(i));
+    }
+}
+
+TEST(OneDArrayTest, AssignmentOperatorTest) {
+    // Set up original array
+    DType dtype(COMMON_DTYPES::SF32);
+    unsigned char original_data[40] = {0};  
+    std::unique_ptr<unsigned char[]> data(new unsigned char[40]);
+    std::copy(original_data, original_data + 40, data.get());
+    OneDArray original(std::move(data), dtype, 10);
+
+    // Create an array to assign from the original
+    OneDArray assigned = original;
+
+    // Verify attributes are copied correctly
+    EXPECT_EQ(assigned.dtype(), original.dtype());
+    EXPECT_EQ(assigned.length(), original.length());
+    EXPECT_EQ(assigned.stride(), original.stride());
+
+    // Verify data is copied correctly
+    for(size_t i = 0; i < original.length(); i++) {
+        EXPECT_EQ(assigned.getElement<float>(i), original.getElement<float>(i));
+    }
+}
+
+
+TEST(OneDArrayTest, IteratorTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::SF32);
+    unsigned char data_raw[40];  
+    for(int i = 0; i < 10; i++) 
+        *reinterpret_cast<float*>(&data_raw[i*4]) = (i/10.0f);
+    std::unique_ptr<unsigned char[]> data(new unsigned char[40]);
+    std::copy(data_raw, data_raw + 40, data.get());
+    OneDArray array(std::move(data), dtype, 10);
+
+    // Test incrementing and dereferencing
+    float expected_value = 0.0f;
+    for(auto it = array.begin<float>(); it != array.end<float>(); ++it) {
+        EXPECT_FLOAT_EQ(*it, expected_value);
+        expected_value += 0.1f;
+    }
+}
+
+TEST(OneDArrayTest, ConstIteratorTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::SF32);
+    unsigned char data_raw[40];  
+    for(int i = 0; i < 10; i++) 
+        *reinterpret_cast<float*>(&data_raw[i*4]) = (i/10.0f);
+    std::unique_ptr<unsigned char[]> data(new unsigned char[40]);
+    std::copy(data_raw, data_raw + 40, data.get());
+    const OneDArray array(std::move(data), dtype, 10);
+
+    // Test incrementing and dereferencing
+    float expected_value = 0.0f;
+    for(auto it = array.begin<float>(); it != array.end<float>(); ++it) {
+        EXPECT_FLOAT_EQ(*it, expected_value);
+        expected_value += 0.1f;
     }
 }
