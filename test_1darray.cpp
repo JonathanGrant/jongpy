@@ -278,3 +278,104 @@ TEST(OneDArrayTest, ConstIteratorTest) {
         expected_value += 0.1f;
     }
 }
+
+TEST(OneDArrayTest, SimpleSumTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::UI64);
+    size_t length = 1000000;
+    unsigned char data_raw[length*8];
+    uint64_t expected_total = 0;
+    for(int i = 0; i < length; i++) {
+        *reinterpret_cast<uint64_t*>(&data_raw[i*8]) = (i+i);
+        expected_total += i+i;
+    }
+    const OneDArray array(data_raw, dtype, length);
+
+    uint64_t total = array.sum<uint64_t>();
+    EXPECT_EQ(expected_total, total);
+}
+
+TEST(OneDArrayTest, AddConstantTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::UI64);
+    size_t length = 1000000;
+    unsigned char data_raw[length*8];
+    uint64_t constant = 10;
+    for(int i = 0; i < length; i++) {
+        *reinterpret_cast<uint64_t*>(&data_raw[i*8]) = (i+i);
+    }
+    const OneDArray array(data_raw, dtype, length);
+    OneDArray other = array + constant;
+
+    for(int i = 0; i < length; i++) {
+        EXPECT_EQ(i + i + constant, other.getElement<uint64_t>(i));
+    }
+}
+
+TEST(OneDArrayTest, SubConstantTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::UI64);
+    size_t length = 1000000;
+    unsigned char data_raw[length*8];
+    uint64_t constant = 10;
+    for(int i = 10; i < length; i++) {
+        *reinterpret_cast<uint64_t*>(&data_raw[i*8]) = (i+i);
+    }
+    const OneDArray array(data_raw, dtype, length);
+    OneDArray other = array - constant;
+
+    for(int i = 10; i < length; i++) {
+        EXPECT_EQ(i + i - constant, other.getElement<uint64_t>(i));
+    }
+}
+
+TEST(OneDArrayTest, AddEqConstantTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::UI64);
+    size_t length = 1000000;
+    unsigned char data_raw[length*8];
+    uint64_t constant = 10;
+    for(int i = 0; i < length; i++) {
+        *reinterpret_cast<uint64_t*>(&data_raw[i*8]) = (i+i);
+    }
+    OneDArray array(data_raw, dtype, length);
+    array += constant;
+
+    for(int i = 0; i < length; i++) {
+        EXPECT_EQ(i + i + constant, array.getElement<uint64_t>(i));
+    }
+}
+
+TEST(OneDArrayTest, SubEqConstantTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::UI64);
+    size_t length = 1000000;
+    unsigned char data_raw[length*8];
+    uint64_t constant = 10;
+    for(int i = 0; i < length; i++) {
+        *reinterpret_cast<uint64_t*>(&data_raw[i*8]) = (i+i);
+    }
+    OneDArray array(data_raw, dtype, length);
+    array -= constant;
+
+    for(int i = 0; i < length; i++) {
+        EXPECT_EQ(i + i - constant, array.getElement<uint64_t>(i));
+    }
+}
+
+TEST(OneDArrayTest, MultEqConstantTest) {
+    // Set up array
+    DType dtype(COMMON_DTYPES::UI64);
+    size_t length = 1000000;
+    unsigned char data_raw[length*8];
+    uint64_t constant = 10;
+    for(int i = 0; i < length; i++) {
+        *reinterpret_cast<uint64_t*>(&data_raw[i*8]) = (i+i);
+    }
+    OneDArray array(data_raw, dtype, length);
+    array *= constant;
+
+    for(int i = 0; i < length; i++) {
+        EXPECT_EQ((i + i) * constant, array.getElement<uint64_t>(i));
+    }
+}
