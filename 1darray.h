@@ -116,56 +116,37 @@ public:
 
     template<typename T, typename F>
     void binary_op_inplace(T constant, F op) {
+        size_t step_size = _dtype.size()*_stride;
         #pragma omp parallel for
         for(size_t idx = 0; idx < _length; ++idx) {
-            op(getElement<T>(idx), constant);
+            *reinterpret_cast<T*>(&_data[idx*step_size]) = op(getElement<T>(idx), constant);
         }
     }
 
-    template<typename T>
-    OneDArray operator+(T constant) const {
-        return binary_op<T>(constant, [](T a, T b) { return a + b; });
-    }
+    #define DEFINE_BINARY_OP(OP, FUNC) \
+        template<typename T> \
+        OneDArray operator OP(T constant) const { \
+            return binary_op<T>(constant, FUNC); \
+        }
+    #define DEFINE_BINARY_OP_INPLACE(OP, FUNC) \
+        template<typename T> \
+        void operator OP(T constant) { \
+            binary_op_inplace<T>(constant, FUNC); \
+        }
 
-    template<typename T>
-    OneDArray operator-(T constant) const {
-        return binary_op<T>(constant, [](T a, T b) { return a - b; });
-    }
+    DEFINE_BINARY_OP(+, [](T a, T b) { return a + b; })
+    DEFINE_BINARY_OP(-, [](T a, T b) { return a - b; })
+    DEFINE_BINARY_OP(*, [](T a, T b) { return a * b; })
+    DEFINE_BINARY_OP(/, [](T a, T b) { return a / b; })
+    DEFINE_BINARY_OP(%, [](T a, T b) { return a % b; })
 
-    template<typename T>
-    OneDArray operator*(T constant) const {
-        return binary_op<T>(constant, [](T a, T b) { return a * b; });
-    }
+    DEFINE_BINARY_OP_INPLACE(+=, [](T a, T b) { return a + b; })
+    DEFINE_BINARY_OP_INPLACE(-=, [](T a, T b) { return a - b; })
+    DEFINE_BINARY_OP_INPLACE(*=, [](T a, T b) { return a * b; })
+    DEFINE_BINARY_OP_INPLACE(/=, [](T a, T b) { return a / b; })
 
-    template<typename T>
-    OneDArray operator/(T constant) const {
-        return binary_op<T>(constant, [](T a, T b) { return a / b; });
-    }
-
-    template<typename T>
-    OneDArray operator%(T constant) const {
-        return binary_op<T>(constant, [](T a, T b) { return a % b; });
-    }
-
-    template<typename T>
-    void operator+=(T constant) {
-        binary_op_inplace<T>(constant, [](T& a, T b) { a += b; });
-    }
-
-    template<typename T>
-    void operator-=(T constant) {
-        binary_op_inplace<T>(constant, [](T& a, T b) { a -= b; });
-    }
-
-    template<typename T>
-    void operator*=(T constant) {
-        binary_op_inplace<T>(constant, [](T& a, T b) { a *= b; });
-    }
-
-    template<typename T>
-    void operator/=(T constant) {
-        binary_op_inplace<T>(constant, [](T& a, T b) { a /= b; });
-    }
+    #undef DEFINE_BINARY_OP_INPLACE
+    #undef DEFINE_BINARY_OP
 
 private:
     std::unique_ptr<unsigned char[]> _data;
